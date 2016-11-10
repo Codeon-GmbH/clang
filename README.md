@@ -137,6 +137,10 @@ brew tap codeon-gmbh/software
 brew install mulle-clang
 ```
 
+> WARNING: The linuxbrew llvm build seems **broken** and it doesn't 
+> have a bottle. It is advised to manually build the compiler
+> for now.
+
 Otherwise read:
 
 * [How to Build](BUILD_MULLE_CLANG.md)
