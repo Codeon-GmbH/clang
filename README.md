@@ -137,11 +137,14 @@ brew tap codeon-gmbh/software
 brew install mulle-clang
 ```
 
+> #### <font color="red">This takes a long time! On my Macbook Air the build took about 30 minutes, even with the prerequisite *llvm* downloaded as a bottle.</font>
+
+
 Otherwise read:
 
 * [How to Build](BUILD_MULLE_CLANG.md)
 
-
+Afterwards head on over to [mulle-objc](//www.mulle-kybernetik.com/mulle-objc) to get the Objective-C libraries.
 
 ## Author
 

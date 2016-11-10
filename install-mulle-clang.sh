@@ -713,7 +713,7 @@ download_clang()
             if [ ! -f mulle-clang.tgz ]
             then
                curl -L -C- -o _mulle-clang.tgz "${CLANG_ARCHIVE}"  || fail "curl failed"
-               tar tfz _mulle-clang.tar.xz > /dev/null || fail "tar archive corrupt"
+               tar tfz _mulle-clang.tgz > /dev/null || fail "tar archive corrupt"
                mv _mulle-clang.tgz mulle-clang.tgz
             fi
 
