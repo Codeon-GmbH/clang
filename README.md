@@ -137,8 +137,13 @@ brew tap codeon-gmbh/software
 brew install mulle-clang
 ```
 
-> #### <font color="red">This takes a long time! On my Macbook Air the build took about 30 minutes, even with the prerequisite *llvm* downloaded as a bottle.</font>
+> #### <font color="red">This takes a long time! On my Macbook Air the build
+> took about 30 minutes, even with the prerequisite *llvm* downloaded as a
+> bottle.</font>
 
+> WARNING: The linuxbrew llvm build seems to be **broken** and it doesn't
+> have a bottle. It is advised to manually build the compiler
+> for now.
 
 Otherwise read:
 
