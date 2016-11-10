@@ -129,8 +129,8 @@ as this project is huge.
 1. Download the script, don't clone the whole repository yet
 
    ```
-   mkdir mulle-objc
-   cd mulle-objc
+   mkdir mulle-clang
+   cd mulle-clang
    curl -L -O "https://raw.githubusercontent.com/Codeon-GmbH/mulle-clang/mulle_objclang_39/install-mulle-clang.sh"
    ```
 2. Build the compiler:
@@ -143,22 +143,10 @@ as this project is huge.
    Now you will have to wait for a long, long time.
 3. Pick one of the following install methods:
 
-   *  Add **mulle-clang** to your PATH. Assuming you are still in `./mulle-objc` (the directory containing the produced folders `bin` and `lib`):
+   *  Add **mulle-clang** to your PATH. Assuming you are still in `./mulle-clang` (the directory containing the produced folders `./bin` and `./lib`):
 
       ```
       PATH="${PWD}/bin:${PATH}" ; export PATH
       LD_LIBRARY_PATH="${PWD}/lib:${LD_LIBRARY_PATH}" ; export LD_LIBRARY_PATH
       DYLD_LIBRARY_PATH="${PWD}/lib:${DYLD_LIBRARY_PATH}" ; export DYLD_LIBRARY_PATH
-
-   *  Install a symlink in '/usr/local/bin'
-
-      ```
-      ./install-mulle-clang.sh install
-      ```
-
-   * Do a symlink in './bin' manually
-
-      ```
-      cd ./bin
-      ln -s clang mulle-clang
       ```
