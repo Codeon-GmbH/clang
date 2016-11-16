@@ -55,12 +55,16 @@ environment_initialize()
          BOOTSTRAP_FLAGS="-v"
          CLANG_SUFFIX="-cl"
          EXE_EXTENSION=".exe"
-         DEFAULTPREFIX="~"
+         MULLE_CLANG_INSTALL_PREFIX="~/mulle-clang/${MULLE_OBJC_VERSION}"
+         MULLE_LLDB_INSTALL_PREFIX="~/mulle-lldb/${MULLE_OBJC_VERSION}"
+         SYMLINK_PREFIX="~"
          SUDO=
       ;;
 
       *)
-         DEFAULTPREFIX="/usr/local"
+         MULLE_CLANG_INSTALL_PREFIX="/opt/mulle-clang/${MULLE_OBJC_VERSION}"
+         MULLE_LLDB_INSTALL_PREFIX="/opt/mulle-lldb/${MULLE_OBJC_VERSION}"
+         SYMLINK_PREFIX="/usr/local"
          SUDO="sudo"
       ;;
    esac
@@ -309,7 +313,7 @@ build_cmake()
          ./configure "--prefix=${PREFIX}"
          ${MAKE} install || exit 1
 
-      cd "${owd}"
+      cd "${OWD}"
    set +e
 }
 
@@ -414,7 +418,7 @@ ensure_proper_git_branch()
             fi
             git checkout -f "${checkout_branch}"
 
-            [ -d "${owd}/${build_dir}" ] && rm -rf "${owd}/${build_dir}"
+            [ -d "${OWD}/${build_dir}" ] && rm -rf "${OWD}/${build_dir}"
 
             curr_branch="`git rev-parse --abbrev-ref HEAD`"
             if [ "${curr_branch}" != "${checkout_branch}" ]
@@ -423,7 +427,7 @@ ensure_proper_git_branch()
             fi
          fi
 
-      cd "${owd}"
+      cd "${OWD}"
 
    set +e
 }
@@ -490,7 +494,7 @@ setup_build_environment()
 
          cd "${SRC_DIR}/mulle-bootstrap"
             ./install.sh "${PREFIX}"
-         cd "${owd}"
+         cd "${OWD}"
 
       set +e
    fi
@@ -543,7 +547,7 @@ setup_build_environment()
 
          cd "${SRC_DIR}/mulle-build"
             ./install.sh "${PREFIX}"
-         cd "${owd}"
+         cd "${OWD}"
 
       set +e
    fi
@@ -799,14 +803,14 @@ _build_llvm()
                -DLLVM_ENABLE_CXX1Y:BOOL=OFF \
                ${CMAKE_FLAGS} \
                "${BUILD_RELATIVE}/../${LLVM_DIR}"
-         cd "${owd}"
+         cd "${OWD}"
       set +e
    fi
 
    cd "${LLVM_BUILD_DIR}" || fail "build_llvm: ${LLVM_BUILD_DIR} missing"
    # hmm
       ${MAKE} ${MAKE_FLAGS} "$@" || fail "build_llvm: ${MAKE} failed"
-   cd "${owd}"
+   cd "${OWD}"
 }
 
 
@@ -848,16 +852,16 @@ _build_clang()
                   -Wno-dev \
                   -G "${CMAKE_GENERATOR}" \
                   -DCMAKE_BUILD_TYPE="${CLANG_BUILD_TYPE}" \
-                  -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+                  -DCMAKE_INSTALL_PREFIX="${MULLE_CLANG_INSTALL_PREFIX}" \
                   ${CMAKE_FLAGS} \
                   "${BUILD_RELATIVE}/../${CLANG_DIR}"
-         cd "${owd}"
+         cd "${OWD}"
       set +e
    fi
 
    cd "${CLANG_BUILD_DIR}" || fail "build_clang: ${CLANG_BUILD_DIR} missing"
       ${MAKE} ${MAKE_FLAGS} "$@" || fail "build_clang: ${MAKE} failed"
-   cd "${owd}"
+   cd "${OWD}"
 }
 
 
@@ -886,29 +890,29 @@ _build_lldb()
       set -e
          cd "${LLDB_BUILD_DIR}"
 
-            PATH="${LLVM_BIN_DIR}:${owd}/${CLANG_BUILD_DIR}/bin:$PATH"
+            PATH="${LLVM_BIN_DIR}:${OWD}/${CLANG_BUILD_DIR}/bin:$PATH"
 
             CC=clang CXX=clang++ \
                cmake \
                   -Wno-dev \
                   -G "${CMAKE_GENERATOR}" \
                   -DCMAKE_BUILD_TYPE="${LLDB_BUILD_TYPE}" \
-                  -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
-                  -DLLDB_PATH_TO_CLANG_BUILD="${owd}/${CLANG_BUILD_DIR}" \
-                  -DLLDB_PATH_TO_CLANG_SOURCE="${owd}/${CLANG_DIR}" \
-                  -DLLDB_PATH_TO_LLVM_BUILD="${owd}/${LLVM_BUILD_DIR}" \
-                  -DLLDB_PATH_TO_LLVM_SOURCE="${owd}/${LLVM_DIR}" \
+                  -DCMAKE_INSTALL_PREFIX="${MULLE_LLDB_INSTALL_PREFIX}" \
+                  -DLLDB_PATH_TO_CLANG_BUILD="${OWD}/${CLANG_BUILD_DIR}" \
+                  -DLLDB_PATH_TO_CLANG_SOURCE="${OWD}/${CLANG_DIR}" \
+                  -DLLDB_PATH_TO_LLVM_BUILD="${OWD}/${LLVM_BUILD_DIR}" \
+                  -DLLDB_PATH_TO_LLVM_SOURCE="${OWD}/${LLVM_DIR}" \
                   -DLLDB_DISABLE_PYTHON=1 \
                   -DLLDB_DISABLE_LIBEDIT=0 \
                   ${CMAKE_FLAGS} \
                   "${BUILD_RELATIVE}/../${LLDB_DIR}"
-         cd "${owd}"
+         cd "${OWD}"
       set +e
    fi
 
    cd "${LLDB_BUILD_DIR}" || fail "build_clang: ${LLDB_BUILD_DIR} missing"
       ${MAKE} ${MAKE_FLAGS} "$@" || fail "build_lldb: ${MAKE} failed"
-   cd "${owd}"
+   cd "${OWD}"
 }
 
 
@@ -1020,7 +1024,7 @@ install_executable()
 
    src="$1"
    dstname="$2"
-   dstdir="${3:-${INSTALLPREFIX}/bin}"
+   dstdir="${3:-${SYMLINK_PREFIX}/bin}"
 
    log_fluff "Create symbolic link ${dstdir}/${dstname}"
 
@@ -1038,14 +1042,14 @@ install_mulle_clang_link()
 {
    log_fluff "Install mulle-clang link..."
 
-   if [ ! -f "${PREFIX}/bin/clang${EXE_EXTENSION}" ]
+   if [ ! -f "${MULLE_CLANG_INSTALL_PREFIX}/bin/clang${EXE_EXTENSION}" ]
    then
       fail "download and build mulle-clang with
    ./install-mulle-clang.sh
 before you can install"
    fi
 
-   install_executable "${PREFIX}/bin/clang${CLANG_SUFFIX}${EXE_EXTENSION}" mulle-clang${CLANG_SUFFIX}${EXE_EXTENSION}
+   install_executable "${MULLE_CLANG_INSTALL_PREFIX}/bin/clang${CLANG_SUFFIX}${EXE_EXTENSION}" mulle-clang${CLANG_SUFFIX}${EXE_EXTENSION}
 }
 
 
@@ -1053,14 +1057,14 @@ install_mulle_lldb_link()
 {
    log_fluff "Install mulle-lldb link..."
 
-   if [ ! -f "${PREFIX}/bin/lldb${EXE_EXTENSION}" ]
+   if [ ! -f "${MULLE_LLDB_INSTALL_PREFIX}/bin/lldb${EXE_EXTENSION}" ]
    then
       fail "download and build mulle-lldb first with
    ./install-mulle-clang.sh --lldb
 before you can install"
    fi
 
-   install_executable "${PREFIX}/bin/lldb${EXE_EXTENSION}" mulle-lldb${EXE_EXTENSION}
+   install_executable "${MULLE_LLDB_INSTALL_PREFIX}/bin/lldb${EXE_EXTENSION}" mulle-lldb${EXE_EXTENSION}
 }
 
 
@@ -1092,7 +1096,7 @@ uninstall_mulle_clang_link()
 
    log_fluff "Uninstall mulle-clang link..."
 
-   prefix="${1:-${INSTALLPREFIX}}"
+   prefix="${1:-${MULLE_CLANG_INSTALL_PREFIX}}"
 
    uninstall_executable "${prefix}/bin/mulle-clang${CLANG_SUFFIX}"
 }
@@ -1104,7 +1108,7 @@ uninstall_mulle_lldb_link()
 
    log_fluff "Uninstall mulle-lldb link..."
 
-   prefix="${1:-${INSTALLPREFIX}}"
+   prefix="${1:-${MULLE_CLANG_INSTALL_PREFIX}}"
 
    uninstall_executable "${prefix}/bin/mulle-lldb"
 }
@@ -1112,7 +1116,8 @@ uninstall_mulle_lldb_link()
 
 main()
 {
-   owd="`pwd -P`"
+   OWD="`pwd -P`"
+   PATH="${OWD}/bin:$PATH"; export PATH
 
    while [ $# -ne 0 ]
    do
@@ -1167,11 +1172,14 @@ main()
    COMMAND="${1:-default}"
    [ $# -eq 0 ] || shift
 
-   PREFIX="${1:-${owd}}"
-   [ $# -eq 0 ] || shift
-   PATH="${PREFIX}/bin:$PATH"; export PATH
 
-   INSTALLPREFIX="${1:-${DEFAULTPREFIX}}"
+   SYMLINK_PREFIX="${1:-${SYMLINK_PREFIX}}"
+   [ $# -eq 0 ] || shift
+
+   MULLE_CLANG_INSTALL_PREFIX="${1:-${MULLE_CLANG_INSTALL_PREFIX}}"
+   [ $# -eq 0 ] || shift
+
+   MULLE_LLDB_INSTALL_PREFIX="${1:-${MULLE_LLDB_INSTALL_PREFIX}}"
    [ $# -eq 0 ] || shift
 
    # shouldn't thsis be CC /CXX ?
@@ -1247,7 +1255,9 @@ main()
 
    # blurb a little, this has some advantages
 
-   log_info "mulle_objc version ${MULLE_OBJC_VERSION_MAJOR} (prefix=${PREFIX})"
+   log_info "MULLE_OBJC_VERSION=${MULLE_OBJC_VERSION}"
+   log_info "CLANG_INSTALL_PREFIX=${CLANG_INSTALL_PREFIX}"
+   log_info "SYMLINK_PREFIX=${SYMLINK_PREFIX}"
 
    setup_build_environment
 
