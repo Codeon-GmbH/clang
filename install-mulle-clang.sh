@@ -15,12 +15,6 @@ MULLE_OBJC_VERSION="3.9.0"  # for opt
 CMAKE_VERSION="3.5"
 CMAKE_PATCH_VERSION="${CMAKE_VERSION}.2"
 
-MULLE_BOOTSTRAP_MIN_MAJOR=2
-MULLE_BOOTSTRAP_MIN_MINOR=3
-
-MULLE_BUILD_MIN_MAJOR=0
-MULLE_BUILD_MIN_MINOR=6
-
 CLANG_ARCHIVE="https://github.com/Codeon-GmbH/mulle-clang/archive/3.9.0.tar.gz"
 LLVM_ARCHIVE="http://www.llvm.org/releases/3.9.0/llvm-3.9.0.src.tar.xz"
 LIBCXX_ARCHIVE="http://llvm.org/releases/3.9.0/libcxx-3.9.0.src.tar.xz"
@@ -53,7 +47,6 @@ environment_initialize()
    UNAME="`uname`"
    case "${UNAME}" in
       MINGW*)
-         BOOTSTRAP_FLAGS="-v"
          CLANG_SUFFIX="-cl"
          EXE_EXTENSION=".exe"
          MULLE_CLANG_INSTALL_PREFIX="~/mulle-clang/${MULLE_OBJC_VERSION}"
@@ -449,111 +442,6 @@ setup_build_environment()
    do_install="YES"
 
    #
-   # install a mulle-bootstrap copy in ./bin if needed
-   #
-   local exepath
-
-   exepath="`command -v "mulle-bootstrap" 2> /dev/null`"
-   if [ $? -eq 0 ]
-   then
-      do_install="NO"
-      version="`mulle-bootstrap version`"
-      [ -z "${version}" ] && fail "mulle-bootstrap did not provide a version"
-
-      major="`echo "${version}" | head -1 | cut -d. -f1`"
-      if [ "${major}" -le "${MULLE_BOOTSTRAP_MIN_MAJOR}" ]
-      then
-         do_install="YES"
-         if [ "${major}" -eq "${MULLE_BOOTSTRAP_MIN_MAJOR}" ]
-         then
-            minor="`echo "${version}" | head -1 | cut -d. -f2`"
-            if [ "${minor}" -ge "${MULLE_BOOTSTRAP_MIN_MINOR}" ]
-            then
-               do_install="NO"
-            fi
-         fi
-      fi
-
-      if [ "${do_install}" = "YES" -a "${exepath}" != "${PREFIX}/bin/mulle-bootstrap" ]
-      then
-         # avoid having two around, possibly
-         fail "your mulle-bootstrap is too old, please upgrade to ${MULLE_BOOTSTRAP_MIN_MAJOR}.${MULLE_BOOTSTRAP_MIN_MINOR} minimum"
-      fi
-   fi
-
-   if [ "${do_install}" = "YES" ]
-   then
-      mkdir "${SRC_DIR}" 2> /dev/null
-      set -e
-         if [ ! -d "${SRC_DIR}/mulle-bootstrap" ]
-         then
-            log_fluff "Download mulle-bootstrap"
-            git clone "${MULLE_GITHUB_REPO}/mulle-bootstrap" "${SRC_DIR}/mulle-bootstrap"
-         else
-            ( cd "${SRC_DIR}/mulle-bootstrap" ; git pull "${MULLE_GITHUB_REPO}/mulle-bootstrap" )
-         fi
-
-         cd "${SRC_DIR}/mulle-bootstrap"
-            ./install.sh "${PREFIX}"
-         cd "${OWD}"
-
-      set +e
-   fi
-
-
-   #
-   # install a mulle-build copy in ./bin if needed
-   #
-   do_install="YES"
-
-   exepath="`command -v "mulle-build" 2> /dev/null`"
-   if [ $? -eq 0 ]
-   then
-      do_install="NO"
-      version="`mulle-build --version`"
-      [ -z "${version}" ] && fail "mulle-build did not provide a version"
-
-      major="`echo "${version}" | head -1 | cut -d. -f1`"
-      if [ "${major}" -le "${MULLE_BUILD_MIN_MAJOR}" ]
-      then
-         do_install="YES"
-         if [ "${major}" -eq "${MULLE_BUILD_MIN_MAJOR}" ]
-         then
-            minor="`echo "${version}" | head -1 | cut -d. -f2`"
-            if [ "${minor}" -ge "${MULLE_BUILD_MIN_MINOR}" ]
-            then
-               do_install="NO"
-            fi
-         fi
-      fi
-
-      if [ "${do_install}" = "YES" -a "${exepath}" != "${PREFIX}/bin/mulle-build" ]
-      then
-         # avoid having two around, possibly
-         fail "your mulle-build is too old, please upgrade to ${MULLE_BUILD_MIN_MAJOR}.${MULLE_BUILD_MIN_MINOR} minimum"
-      fi
-   fi
-
-   if [ "${do_install}" = "YES" ]
-   then
-      mkdir "${SRC_DIR}" 2> /dev/null
-      set -e
-         if [ ! -d "${SRC_DIR}/mulle-build" ]
-         then
-            log_fluff "Download mulle-build"
-            git clone "${MULLE_GITHUB_REPO}/mulle-build" "${SRC_DIR}/mulle-build"
-         else
-            ( cd "${SRC_DIR}/mulle-build" ; git pull "${MULLE_GITHUB_REPO}/mulle-build" )
-         fi
-
-         cd "${SRC_DIR}/mulle-build"
-            ./install.sh "${PREFIX}"
-         cd "${OWD}"
-
-      set +e
-   fi
-
-   #
    # make sure cmake and git and gcc are present (and in the path)
    # should check version
    # Set some defaults so stuff possibly just magically works.
@@ -699,8 +587,6 @@ download_llvm()
       esac
    fi
 }
-
-
 
 
 download_clang()
@@ -1129,33 +1015,22 @@ main()
          ;;
 
          -t|--trace)
-            BOOTSTRAP_FLAGS="`concat "${BOOTSTRAP_FLAGS}" "$1"`"
             set -x
          ;;
 
          -v|--verbose)
-            BOOTSTRAP_FLAGS="`concat "${BOOTSTRAP_FLAGS}" "$1"`"
             FLUFF=
             VERBOSE="YES"
          ;;
 
          -vv|--very-verbose)
-            BOOTSTRAP_FLAGS="`concat "${BOOTSTRAP_FLAGS}" "$1"`"
             FLUFF="YES"
             VERBOSE="YES"
-            MULLE_EXECUTOR_TRACE="YES"
          ;;
 
          -vvv|--very-verbose-with-settings)
-            BOOTSTRAP_FLAGS="`concat "${BOOTSTRAP_FLAGS}" "$1"`"
             FLUFF="YES"
             VERBOSE="YES"
-            MULLE_EXECUTOR_TRACE="YES"
-         ;;
-
-         # known mulle-bootstrap flags
-         -f|-D*|-V|--verbose-build)
-            BOOTSTRAP_FLAGS="`concat "${BOOTSTRAP_FLAGS}" "$1"`"
          ;;
 
          -*)
