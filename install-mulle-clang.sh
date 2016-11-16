@@ -9,7 +9,8 @@
 USE_CLONE="${USE_CLONE:-NO}"
 
 # various versions
-MULLE_OBJC_VERSION_MAJOR=39
+MULLE_OBJC_VERSION_BRANCH=39
+MULLE_OBJC_VERSION="3.9.0"  # for opt
 
 CMAKE_VERSION="3.5"
 CMAKE_PATCH_VERSION="${CMAKE_VERSION}.2"
@@ -1210,21 +1211,15 @@ main()
    fi
 
    #
-   # this number should be uptodate for each release
-   #
-   VERSION="${1:-${MULLE_OBJC_VERSION_MAJOR}}"
-   [ $# -eq 0 ] || shift
-
-   #
    # these parameters are rarely needed
    #
-   LLVM_BRANCH="${1:-release_${VERSION}}"
+   LLVM_BRANCH="${1:-release_${MULLE_OBJC_VERSION_BRANCH}}"
    [ $# -eq 0 ] || shift
    LLDB_BRANCH="${LLVM_BRANCH}"
    CLANG_BRANCH="${LLVM_BRANCH}"
 
-   # "mulle_objcclang_${VERSION}"
-   MULLE_CLANG_BRANCH="${1:-mulle_objclang_${VERSION}}"
+   # "mulle_objcclang_${MULLE_OBJC_VERSION_BRANCH}"
+   MULLE_CLANG_BRANCH="${1:-mulle_objclang_${MULLE_OBJC_VERSION_BRANCH}}"
    [ $# -eq 0 ] || shift
    MULLE_LLDB_BRANCH="${1:-${MULLE_CLANG_BRANCH}}"
    [ $# -eq 0 ] || shift
@@ -1256,7 +1251,7 @@ main()
    # blurb a little, this has some advantages
 
    log_info "MULLE_OBJC_VERSION=${MULLE_OBJC_VERSION}"
-   log_info "CLANG_INSTALL_PREFIX=${CLANG_INSTALL_PREFIX}"
+   log_info "MULLE_CLANG_INSTALL_PREFIX=${MULLE_CLANG_INSTALL_PREFIX}"
    log_info "SYMLINK_PREFIX=${SYMLINK_PREFIX}"
 
    setup_build_environment
