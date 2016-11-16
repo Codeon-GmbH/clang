@@ -800,7 +800,7 @@ _build_llvm()
                -Wno-dev \
                -G "${CMAKE_GENERATOR}" \
                -DCMAKE_BUILD_TYPE="${LLVM_BUILD_TYPE}" \
-               -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+               -DCMAKE_INSTALL_PREFIX="${MULLE_LLVM_INSTALL_PREFIX}" \
                -DLLVM_ENABLE_CXX1Y:BOOL=OFF \
                ${CMAKE_FLAGS} \
                "${BUILD_RELATIVE}/../${LLVM_DIR}"
@@ -1118,6 +1118,7 @@ uninstall_mulle_lldb_link()
 main()
 {
    OWD="`pwd -P`"
+   PREFIX="${OWD}"
    PATH="${OWD}/bin:$PATH"; export PATH
 
    while [ $# -ne 0 ]
@@ -1178,6 +1179,9 @@ main()
    [ $# -eq 0 ] || shift
 
    MULLE_CLANG_INSTALL_PREFIX="${1:-${MULLE_CLANG_INSTALL_PREFIX}}"
+   [ $# -eq 0 ] || shift
+
+   MULLE_LLVM_INSTALL_PREFIX="${1:-${MULLE_CLANG_INSTALL_PREFIX}}"
    [ $# -eq 0 ] || shift
 
    MULLE_LLDB_INSTALL_PREFIX="${1:-${MULLE_LLDB_INSTALL_PREFIX}}"
