@@ -310,6 +310,7 @@ build_cmake()
          ./configure "--prefix=${PREFIX}"
          ${MAKE} install || exit 1
 
+         hash -r  # apparently needed...
       cd "${OWD}"
    set +e
 }
