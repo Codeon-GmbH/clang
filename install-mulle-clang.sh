@@ -328,7 +328,7 @@ check_cmake_version()
        fail "Could not figure out where cmake is and what version it is."
    fi
 
-   minor="`echo "${version}" | head -1 | cut -d. -f2`"   if ]
+   minor="`echo "${version}" | head -1 | cut -d. -f2`"
    if [ "${major}" -lt "${CMAKE_VERSION_MAJOR}" ] || [ "${major}" -eq "${CMAKE_VERSION_MAJOR}" -a "${minor}" -lt "${CMAKE_VERSION_MINOR}" ]
    then
       log_fluff "The cmake version is too old. cmake version ${CMAKE_VERSION} or better is required."
