@@ -24,7 +24,6 @@ The compiler compiles Objective-C source for the **mulle-objc** runtime by defau
 
 ### AAM - Always Autorelease Mode
 
-
 The compiler has a special mode called AAM. This changes the Objective-C language in the following ways:
 
 1. There is a tranformation done on selector names
@@ -127,29 +126,47 @@ defined in the runtime.
 
 ## Install
 
-On OS X and Linux you can use
-[homebrew](//brew.sh), respectively
-[linuxbrew](//linuxbrew.sh)
-to install the library:
+### OS X
+
+You can use [homebrew](//brew.sh) to install the library:
 
 ```
 brew tap codeon-gmbh/software
 brew install mulle-clang
 ```
+> If for some reason homebrew can not use the bottle, the compiler must be
+> built from source. This takes a long time! On my Macbook Air the build
+> took about 30 minutes, even with the prerequisite llvm downloaded as a bottle.
 
-> #### <font color="red">This takes a long time! On my Macbook Air the build
-> took about 30 minutes, even with the prerequisite *llvm* downloaded as a
-> bottle.</font>
 
-> WARNING: The linuxbrew llvm build seems to be **broken** and it doesn't
-> have a bottle. It is advised to manually build the compiler
-> for now.
+### Linux
+
+
+This will install the compiler into `/opt/mulle-clang` and a symlink
+into `/usr/bin`:
+
+#### Ubuntu/Debian 64 bit
+
+```
+curl -O -L http://download.codeon.de/bottles/mulle-clang-3.9.0-amd64.deb
+sudo dpkg --install mulle-clang-3.9.0-amd64.deb
+```
+
+#### RedHat/RPM 64 bit
+
+```
+curl -O -L http://download.codeon.de/bottles/mulle-clang-3.9.0-amd64.rpm
+sudo rpm –ivh mulle-clang-3.9.0-amd64.rpm
+```
+
+### Manually
 
 Otherwise read:
 
 * [How to Build](BUILD_MULLE_CLANG.md)
 
 Afterwards head on over to [mulle-objc](//www.mulle-kybernetik.com/mulle-objc) to get the Objective-C libraries.
+
 
 ## Author
 

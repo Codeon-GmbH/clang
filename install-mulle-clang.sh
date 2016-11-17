@@ -13,6 +13,9 @@ MULLE_OBJC_VERSION_BRANCH=39
 MULLE_OBJC_VERSION="3.9.0"  # for opt
 
 CMAKE_VERSION="3.5"
+CMAKE_VERSION_MAJOR=3
+CMAKE_VERSION_MINOR=5
+CMAKE_VERSION_PATCH=2
 CMAKE_PATCH_VERSION="${CMAKE_VERSION}.2"
 
 CLANG_ARCHIVE="https://github.com/Codeon-GmbH/mulle-clang/archive/3.9.0.tar.gz"
@@ -325,10 +328,10 @@ check_cmake_version()
        fail "Could not figure out where cmake is and what version it is."
    fi
 
-   minor="`echo "${version}" | head -1 | cut -d. -f2`"
-   if [ "${major}" -lt 3 ] || [ "${major}" -eq 3 -a "${minor}" -lt 4 ]
+   minor="`echo "${version}" | head -1 | cut -d. -f2`"   if ]
+   if [ "${major}" -lt "${CMAKE_VERSION_MAJOR}" ] || [ "${major}" -eq "${CMAKE_VERSION_MAJOR}" -a "${minor}" -lt "${CMAKE_VERSION_MINOR}" ]
    then
-      log_fluff "The cmake version is too old. cmake version 3.4 or better is required."
+      log_fluff "The cmake version is too old. cmake version ${CMAKE_VERSION} or better is required."
       log_fluff "Let's build cmake from scratch"
 
       build_cmake || fail "build_cmake failed"
@@ -1048,7 +1051,6 @@ main()
 
    COMMAND="${1:-default}"
    [ $# -eq 0 ] || shift
-
 
    SYMLINK_PREFIX="${1:-${SYMLINK_PREFIX}}"
    [ $# -eq 0 ] || shift

@@ -26,41 +26,10 @@ Check the
 [mulle-build README.md](//www.mulle-kybernetik.com/software/git/mulle-build/README.md)
 for instructions how to get the "Git for Windows" bash going.
 
-### Installing on bare-naked Debian 8.4 (x86_64)
+### Installing on Linux
 
 You need the **bash** shell and you may want to get **sudo** happening to
 install packages (or run the script as **root**). bash is already present.
-To setup sudo for an existing user *nat*:
-
-```
-su
-apt-get install sudo
-useradd -aG sudo nat
-exit
-#  now logout and login again as nat
-```
-
-Continue with [Common Linux instructions](#common-linux).
-
-
-### Installing on a bare-naked Debian 7.9 (x86)
-
-You need the **bash** shell and you may want to get **sudo** happening to
-install packages (or run the script as **root**). bash is already present.
-
-```
-su
-apt-get install sudo
-adduser nat user     # different on wheezy
-exit
-#  now logout and login again as nat
-```
-
-Continue with [Common Linux instructions](#common-linux).
-
-
-<a name="common-linux"></a>
-### Common Linux instructions
 
 Install **git** first:
 
