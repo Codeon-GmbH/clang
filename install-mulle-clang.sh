@@ -59,8 +59,8 @@ environment_initialize()
       ;;
 
       *)
-         MULLE_CLANG_INSTALL_PREFIX="/opt/mulle-clang/${MULLE_OBJC_VERSION}"
-         MULLE_LLDB_INSTALL_PREFIX="/opt/mulle-lldb/${MULLE_OBJC_VERSION}"
+         MULLE_CLANG_INSTALL_PREFIX="${PREFIX}/opt/mulle-clang/${MULLE_OBJC_VERSION}"
+         MULLE_LLDB_INSTALL_PREFIX="${PREFIX}/opt/mulle-lldb/${MULLE_OBJC_VERSION}"
          SYMLINK_PREFIX="/usr/local"
          SUDO="sudo"
       ;;
@@ -358,7 +358,7 @@ get_core_count()
        count="`nproc`"
     fi
 
-    if [ "$count" = "" ]
+    if [ -z "$count" ]
     then
        count=4
     fi
