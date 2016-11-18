@@ -4,10 +4,6 @@
 # (c) 2016 Codeon GmbH, coded by Nat!
 # BSD-3 License
 
-# cmake/llvm cloning is very expensive, because the repos are huge
-
-USE_CLONE="${USE_CLONE:-NO}"
-
 # various versions
 MULLE_OBJC_VERSION_BRANCH=39
 MULLE_OBJC_VERSION="3.9.0"  # for opt
@@ -22,24 +18,6 @@ CLANG_ARCHIVE="https://github.com/Codeon-GmbH/mulle-clang/archive/3.9.0.tar.gz"
 LLVM_ARCHIVE="http://www.llvm.org/releases/3.9.0/llvm-3.9.0.src.tar.xz"
 LIBCXX_ARCHIVE="http://llvm.org/releases/3.9.0/libcxx-3.9.0.src.tar.xz"
 LIBCXXABI_ARCHIVE="http://llvm.org/releases/3.9.0/libcxxabi-3.9.0.src.tar.xz"
-
-#
-#  this needs to be modified when hosting is not on mulle-kybernetik.com
-#
-#
-MULLE_GITHUB_REPOSCHEME="https:/"
-MULLE_GITHUB_REPOHOST="github.com"
-MULLE_GITHUB_REPOPATHPREFIX="mulle-nat"
-_MULLE_GITHUB_REPO="${MULLE_GITHUB_REPOSCHEME}/${MULLE_GITHUB_REPOHOST}/${MULLE_GITHUB_REPOPATHPREFIX}"
-MULLE_GITHUB_REPO=${MULLE_GITHUB_REPO:-${_MULLE_GITHUB_REPO}}
-
-#
-#
-CODEON_GITHUB_REPOSCHEME="https:/"
-CODEON_GITHUB_REPOHOST="github.com"
-CODEON_GITHUB_REPOPATHPREFIX="codeon-gmbh"
-_CODEON_GITHUB_REPO="${CODEON_GITHUB_REPOSCHEME}/${CODEON_GITHUB_REPOHOST}/${CODEON_GITHUB_REPOPATHPREFIX}" # /${CODEON_GITHUB_REPOPATHPREFIX}"
-CODEON_GITHUB_REPO=${CODEON_GITHUB_REPO:-${_CODEON_GITHUB_REPO}}
 
 
 environment_initialize()
@@ -60,7 +38,6 @@ environment_initialize()
    esac
 
    MULLE_CLANG_INSTALL_PREFIX="${PREFIX}/mulle-clang/${MULLE_OBJC_VERSION}"
-   MULLE_LLDB_INSTALL_PREFIX="${PREFIX}/mulle-lldb/${MULLE_OBJC_VERSION}"
 }
 
 
@@ -191,7 +168,6 @@ fetch_brew()
       ;;
 
       Linux)
-         install_binary_if_missing "git"
          install_binary_if_missing "curl"
          install_binary_if_missing "python-setuptools"
          install_binary_if_missing "build-essential"
@@ -362,69 +338,6 @@ get_core_count()
 }
 
 
-ensure_proper_git_branch()
-{
-   local src
-   local vendor_branch
-   local build_dir
-   local branch
-
-   src="$1"
-   [ $# -eq 0 ] || shift
-   [ -z "${src}" ] && fail "ensure_proper_git_branch: src not set"
-
-   vendor_branch="$1"
-   [ $# -eq 0 ] || shift
-   [ -z "${vendor_branch}" ] && fail "ensure_proper_git_branch: vendor_branch not set"
-
-   build_dir="$1"
-   [ $# -eq 0 ] || shift
-   [ -z "${build_dir}" ] && fail "ensure_proper_git_branch: build_dir not set"
-
-   branch="$1"
-   [ $# -eq 0 ] || shift
-
-   local curr_branch
-   local owd
-   local checkout_branch
-
-   checkout_branch="${branch}"
-   if [ -z "${checkout_branch}" ]
-   then
-      checkout_branch="${vendor_branch}"
-   fi
-
-   set -e
-
-      owd="`pwd -P`"
-
-      cd "$src" || exit 1
-
-         curr_branch="`git rev-parse --abbrev-ref HEAD`"
-
-         if [ "${curr_branch}" != "${checkout_branch}" ]
-         then
-            git reset --hard
-            git fetch origin "${vendor_branch}"
-            if [ ! -z "$branch" ]
-            then
-               git fetch mulle "${branch}"
-            fi
-            git checkout -f "${checkout_branch}"
-
-            [ -d "${OWD}/${build_dir}" ] && rm -rf "${OWD}/${build_dir}"
-
-            curr_branch="`git rev-parse --abbrev-ref HEAD`"
-            if [ "${curr_branch}" != "${checkout_branch}" ]
-            then
-               fail "You lost again"
-            fi
-         fi
-
-      cd "${OWD}"
-
-   set +e
-}
 
 
 #
@@ -436,8 +349,6 @@ setup_build_environment()
    local version
    local minor
    local major
-
-   install_binary_if_missing "git" "https://git-scm.com/downloads"
 
    do_install="YES"
 
@@ -543,16 +454,7 @@ download_llvm()
    then
       log_fluff "Download llvm..."
 
-      case "${USE_CLONE}" in
-         YES)
-            log_fluff "Download llvm from github mirror"
-            git clone -b "${LLVM_BRANCH}" "https://github.com/llvm-mirror/llvm.git" "${LLVM_DIR}"  || fail "llvm git clone failed"
-         ;;
-
-         ""|*)
-            _llvm_module_download "llvm" "${LLVM_ARCHIVE}" "${SRC_DIR}"
-         ;;
-      esac
+      _llvm_module_download "llvm" "${LLVM_ARCHIVE}" "${SRC_DIR}"
    fi
 
 
@@ -560,31 +462,14 @@ download_llvm()
    then
       log_fluff "Download libcxx..."
 
-      case "${USE_CLONE}" in
-         YES)
-            (cd "${LLVM_DIR}/projects"; git clone -b "${LLVM_BRANCH}" "https://github.com/llvm-mirror/libcxx.git"  || fail "libcxx git clone failed")
-         ;;
-
-         ""|*)
-            _llvm_module_download "libcxx" "${LIBCXX_ARCHIVE}" "${LLVM_DIR}/projects"
-         ;;
-      esac
+      _llvm_module_download "libcxx" "${LIBCXX_ARCHIVE}" "${LLVM_DIR}/projects"
    fi
 
    if [ ! -d "${LLVM_DIR}/projects/libcxxabi" ]
    then
       log_fluff "Download libcxxabi..."
 
-      case "${USE_CLONE}" in
-         YES)
-            (cd "${LLVM_DIR}/projects"; git clone -b "${LLVM_BRANCH}" "https://github.com/llvm-mirror/libcxxabi.git"  || fail "libcxxabi git clone failed")
-         ;;
-
-         ""|*)
-            _llvm_module_download "libcxxabi" "${LIBCXXABI_ARCHIVE}" "${LLVM_DIR}/projects"
-         ;;
-
-      esac
+      _llvm_module_download "libcxxabi" "${LIBCXXABI_ARCHIVE}" "${LLVM_DIR}/projects"
    fi
 }
 
@@ -595,76 +480,19 @@ download_clang()
 
    if [ ! -d "${CLANG_DIR}" ]
    then
-      case "${USE_CLONE}" in
-         YES)
-            git clone -b "${MULLE_CLANG_BRANCH}" "${CODEON_GITHUB_REPO}/mulle-clang.git" "${CLANG_DIR}"  || fail "git clone failed"
-         ;;
+      if [ ! -f mulle-clang.tgz ]
+      then
+         curl -L -C- -o _mulle-clang.tgz "${CLANG_ARCHIVE}"  || fail "curl failed"
+         tar tfz _mulle-clang.tgz > /dev/null || fail "tar archive corrupt"
+         mv _mulle-clang.tgz mulle-clang.tgz
+      fi
 
-         ""|*)
-            if [ ! -f mulle-clang.tgz ]
-            then
-               curl -L -C- -o _mulle-clang.tgz "${CLANG_ARCHIVE}"  || fail "curl failed"
-               tar tfz _mulle-clang.tgz > /dev/null || fail "tar archive corrupt"
-               mv _mulle-clang.tgz mulle-clang.tgz
-            fi
-
-            tar xfz mulle-clang.tgz
-            mkdir -p "`dirname -- "${CLANG_DIR}"`" 2> /dev/null
-            mv mulle-clang-3.9.0  "${CLANG_DIR}"
-         ;;
-      esac
+      tar xfz mulle-clang.tgz
+      mkdir -p "`dirname -- "${CLANG_DIR}"`" 2> /dev/null
+      mv mulle-clang-3.9.0  "${CLANG_DIR}"
    fi
 }
 
-
-download_lldb()
-{
-   log_fluff "Download mulle-lldb..."
-
-   if [ ! -d "${LLDB_DIR}" ]
-   then
-      git clone -b "${MULLE_LLDB_BRANCH}" "${CODEON_GITHUB_REPO}/mulle-lldb.git" "${LLDB_DIR}"  || fail "git clone failed"
-   fi
-}
-
-
-update_llvm()
-{
-   log_fluff "Update llvm..."
-
-   case "${USE_CLONE}" in
-      YES)
-         (
-            cd "${LLVM_DIR}" &&
-            git fetch origin "${LLVM_BRANCH}" &&
-            git reset --hard "origin/${LLVM_BRANCH}"
-         )  || fail "git fetch failed"
-      ;;
-   esac
-}
-
-
-update_clang()
-{
-   log_fluff "Update clang..."
-
-   case "${USE_CLONE}" in
-      YES)
-         (
-            cd "${CLANG_DIR}" &&
-            git fetch origin "${MULLE_CLANG_BRANCH}"
-         )  || fail "git fetch failed"
-      ;;
-   esac
-}
-
-
-update_lldb()
-{
-   log_fluff "Update lldb..."
-
-   ( cd "${LLDB_DIR}" ;  git fetch origin "${MULLE_LLDB_BRANCH}" ) || fail "git fetch failed"
-}
 
 
 #
@@ -704,11 +532,6 @@ _build_llvm()
 build_llvm()
 {
    log_fluff "Build llvm..."
-
-   if [ "${USE_CLONE}" = "YES" ]
-   then
-      ensure_proper_git_branch "${LLVM_DIR}" "${LLVM_BRANCH}" "${LLVM_BUILD_DIR}"
-   fi
 
    _build_llvm "$@"
 }
@@ -756,69 +579,13 @@ build_clang()
 {
    log_fluff "Build clang..."
 
-   if [ "${USE_CLONE}" = "YES" ]
-   then
-      ensure_proper_git_branch "${CLANG_DIR}" "${CLANG_BRANCH}" "${CLANG_BUILD_DIR}" "${MULLE_CLANG_BRANCH}"
-   fi
-
    _build_clang "$@"
 }
 
 
-_build_lldb()
-{
-   #
-   # Build mulle-clang
-   #
-   if [ ! -f "${LLDB_BUILD_DIR}/Makefile" ]
-   then
-      mkdir -p "${LLDB_BUILD_DIR}" 2> /dev/null
-
-      set -e
-         cd "${LLDB_BUILD_DIR}"
-
-            PATH="${LLVM_BIN_DIR}:${OWD}/${CLANG_BUILD_DIR}/bin:$PATH"
-
-            CC=clang CXX=clang++ \
-               cmake \
-                  -Wno-dev \
-                  -G "${CMAKE_GENERATOR}" \
-                  -DCMAKE_BUILD_TYPE="${LLDB_BUILD_TYPE}" \
-                  -DCMAKE_INSTALL_PREFIX="${MULLE_LLDB_INSTALL_PREFIX}" \
-                  -DLLDB_PATH_TO_CLANG_BUILD="${OWD}/${CLANG_BUILD_DIR}" \
-                  -DLLDB_PATH_TO_CLANG_SOURCE="${OWD}/${CLANG_DIR}" \
-                  -DLLDB_PATH_TO_LLVM_BUILD="${OWD}/${LLVM_BUILD_DIR}" \
-                  -DLLDB_PATH_TO_LLVM_SOURCE="${OWD}/${LLVM_DIR}" \
-                  -DLLDB_DISABLE_PYTHON=1 \
-                  -DLLDB_DISABLE_LIBEDIT=0 \
-                  ${CMAKE_FLAGS} \
-                  "${BUILD_RELATIVE}/../${LLDB_DIR}"
-         cd "${OWD}"
-      set +e
-   fi
-
-   cd "${LLDB_BUILD_DIR}" || fail "build_clang: ${LLDB_BUILD_DIR} missing"
-      ${MAKE} ${MAKE_FLAGS} "$@" || fail "build_lldb: ${MAKE} failed"
-   cd "${OWD}"
-}
-
-
-build_lldb()
-{
-   log_fluff "Build lldb..."
-
-   if [ "${USE_CLONE}" = "YES" ]
-   then
-      ensure_proper_git_branch "${LLDB_DIR}" "${LLDB_BRANCH}" "${LLDB_BUILD_DIR}" "${MULLE_LLDB_BRANCH}"
-   fi
-   _build_lldb "$@"
-}
-
 
 download_mulle_clang()
 {
-   install_binary_if_missing "git" "https://git-scm.com/downloads"
-
 # try to download most problematic first
 # instead of downloading llvm first for an hour...
 
@@ -829,30 +596,6 @@ download_mulle_clang()
    if [ "${BUILD_LLVM}" != "NO" ]
    then
       download_llvm
-   fi
-
-   if [ ! -z "${MULLE_BUILD_LLDB}" ]
-   then
-      download_lldb
-   fi
-}
-
-
-update_mulle_clang()
-{
-   log_fluff "Update mulle-clang..."
-
-# should check if llvm is installed, if yes
-# check proper version and then use it
-   if [ "${BUILD_LLVM}" != "NO" ]
-   then
-      update_llvm
-   fi
-
-   update_clang
-   if [ ! -z "${MULLE_BUILD_LLDB}" ]
-   then
-      update_lldb
    fi
 }
 
@@ -874,10 +617,6 @@ build_mulle_clang()
    fi
 
    build_clang install
-   if [ ! -z "${MULLE_BUILD_LLDB}" ]
-   then
-      build_lldb install
-   fi
 }
 
 
@@ -896,10 +635,6 @@ _build_mulle_clang()
    fi
 
    _build_clang install
-   if [ ! -z "${MULLE_BUILD_LLDB}" ]
-   then
-      _build_lldb install
-   fi
 }
 
 
@@ -940,21 +675,6 @@ before you can install"
 }
 
 
-install_mulle_lldb_link()
-{
-   log_fluff "Install mulle-lldb link..."
-
-   if [ ! -f "${MULLE_LLDB_INSTALL_PREFIX}/bin/lldb${EXE_EXTENSION}" ]
-   then
-      fail "download and build mulle-lldb first with
-   ./install-mulle-clang.sh --lldb
-before you can install"
-   fi
-
-   install_executable "${MULLE_LLDB_INSTALL_PREFIX}/bin/lldb${EXE_EXTENSION}" mulle-lldb${EXE_EXTENSION}
-}
-
-
 uninstall_executable()
 {
    local path
@@ -989,18 +709,6 @@ uninstall_mulle_clang_link()
 }
 
 
-uninstall_mulle_lldb_link()
-{
-   local prefix
-
-   log_fluff "Uninstall mulle-lldb link..."
-
-   prefix="${1:-${MULLE_CLANG_INSTALL_PREFIX}}"
-
-   uninstall_executable "${prefix}/bin/mulle-lldb"
-}
-
-
 main()
 {
    OWD="`pwd -P`"
@@ -1009,10 +717,6 @@ main()
    while [ $# -ne 0 ]
    do
       case "$1" in
-         --lldb)
-            MULLE_BUILD_LLDB="YES"
-         ;;
-
          -t|--trace)
             set -x
          ;;
@@ -1042,10 +746,6 @@ main()
 
          --llvm-prefix)
             MULLE_LLVM_INSTALL_PREFIX="$1"
-         ;;
-
-         --lldb-prefix)
-            MULLE_LLDB_INSTALL_PREFIX="$1"
          ;;
 
          --symlink-prefix)
@@ -1115,14 +815,12 @@ main()
    LLDB_BUILD_TYPE="${LLDB_BUILD_TYPE:-Debug}"
    CLANG_BUILD_TYPE="${CLANG_BUILD_TYPE:-Release}"
 
-   LLDB_DIR="${SRC_DIR}/mulle-lldb"
    LLVM_DIR="${SRC_DIR}/llvm"
    CLANG_DIR="${SRC_DIR}/mulle-clang"
 
    BUILD_DIR="build"
    BUILD_RELATIVE=".."
 
-   LLDB_BUILD_DIR="${BUILD_DIR}/mulle-lldb.d"
    LLVM_BUILD_DIR="${BUILD_DIR}/llvm.d"
    CLANG_BUILD_DIR="${BUILD_DIR}/mulle-clang.d"
 
@@ -1141,7 +839,6 @@ main()
    case "$COMMAND" in
       install)
          install_mulle_clang_link "$@"
-         [ ! -z "${MULLE_BUILD_LLDB}" ] && install_mulle_lldb_link "$@"
       ;;
 
       default)
@@ -1161,18 +858,8 @@ main()
          _build_mulle_clang
       ;;
 
-      update-only)
-         update_mulle_clang
-      ;;
-
-      update)
-         update_mulle_clang
-         build_mulle_clang
-      ;;
-
       uninstall)
          uninstall_mulle_clang_link
-         [ ! -z "${MULLE_BUILD_LLDB}" ] && uninstall_mulle_lldb_link
       ;;
    esac
 }
