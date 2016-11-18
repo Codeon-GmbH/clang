@@ -36,8 +36,6 @@ environment_initialize()
          SUDO="sudo"
       ;;
    esac
-
-   MULLE_CLANG_INSTALL_PREFIX="${PREFIX}/mulle-clang/${MULLE_OBJC_VERSION}"
 }
 
 
@@ -306,9 +304,24 @@ check_cmake_version()
    then
       log_fluff "The cmake version is too old. cmake version ${CMAKE_VERSION} or better is required."
       log_fluff "Let's build cmake from scratch"
-
-      build_cmake || fail "build_cmake failed"
+      return 1
    fi
+
+   return 0
+}
+
+
+
+check_and_build_cmake()
+{
+   if [ -z "${BUILD_CMAKE}" ]
+   then
+      if check_cmake_version
+      then
+         return
+      fi
+   fi
+   build_cmake || fail "build_cmake failed"
 }
 
 
@@ -336,8 +349,6 @@ get_core_count()
     fi
     echo $count
 }
-
-
 
 
 #
@@ -381,7 +392,7 @@ setup_build_environment()
       ;;
    esac
 
-   check_cmake_version
+   check_and_build_cmake
 
    if [ "${CXX_COMPILER}" = "g++" ]
    then
@@ -457,19 +468,21 @@ download_llvm()
       _llvm_module_download "llvm" "${LLVM_ARCHIVE}" "${SRC_DIR}"
    fi
 
-
-   if [ ! -d "${LLVM_DIR}/projects/libcxx" ]
+   if [ -z "${NO_LIBCXX}" ]
    then
-      log_fluff "Download libcxx..."
+      if [ ! -d "${LLVM_DIR}/projects/libcxx" ]
+      then
+         log_fluff "Download libcxx..."
 
-      _llvm_module_download "libcxx" "${LIBCXX_ARCHIVE}" "${LLVM_DIR}/projects"
-   fi
+         _llvm_module_download "libcxx" "${LIBCXX_ARCHIVE}" "${LLVM_DIR}/projects"
+      fi
 
-   if [ ! -d "${LLVM_DIR}/projects/libcxxabi" ]
-   then
-      log_fluff "Download libcxxabi..."
+      if [ ! -d "${LLVM_DIR}/projects/libcxxabi" ]
+      then
+         log_fluff "Download libcxxabi..."
 
-      _llvm_module_download "libcxxabi" "${LIBCXXABI_ARCHIVE}" "${LLVM_DIR}/projects"
+         _llvm_module_download "libcxxabi" "${LIBCXXABI_ARCHIVE}" "${LLVM_DIR}/projects"
+      fi
    fi
 }
 
@@ -736,6 +749,10 @@ main()
             VERBOSE="YES"
          ;;
 
+         --build-cmake)
+            BUILD_CMAKE="YES"
+         ;;
+
          --prefix)
             PREFIX="$1"
          ;;
@@ -752,6 +769,10 @@ main()
             SYMLINK_PREFIX="$1"
          ;;
 
+         --no-libcxx)
+            NO_LIBCXX="YES"
+         ;;
+
          -*)
             echo "unknown option $1" >&2
             exit 1
@@ -766,6 +787,9 @@ main()
    done
 
    PATH="${PREFIX}/bin:$PATH"; export PATH
+
+   MULLE_CLANG_INSTALL_PREFIX="${MULLE_CLANG_INSTALL_PREFIX:-${PREFIX}/mulle-clang/${MULLE_OBJC_VERSION}}"
+   MULLE_LLVM_INSTALL_PREFIX="${MULLE_LLVM_INSTALL_PREFIX:-${PREFIX}}"
 
    COMMAND="${1:-default}"
    [ $# -eq 0 ] || shift

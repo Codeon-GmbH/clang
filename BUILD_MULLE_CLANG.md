@@ -26,32 +26,11 @@ Check the
 [mulle-build README.md](//www.mulle-kybernetik.com/software/git/mulle-build/README.md)
 for instructions how to get the "Git for Windows" bash going.
 
-### Installing on Linux
+
+### Installing on Linux or FreeBSD
 
 You need the **bash** shell and you may want to get **sudo** happening to
 install packages (or run the script as **root**). bash is already present.
-
-Install **git** first:
-
-```
-sudo apt-get install git
-```
-
-Continue with [Common generic instructions](#common-generic).
-
-
-
-### Installing on FreeBSD 10
-
-Install some packages, you will be needing
-
-```
-pkg install bash
-pkg install sudo
-pkg install git
-```
-
-Add yourself to [sudoers](//www.cyberciti.biz/faq/how-to-add-delete-grant-sudo-privileges-to-users-on-freebsd-unix-server/), if desired.
 
 Continue with [Common generic instructions](#common-generic).
 
@@ -102,20 +81,13 @@ as this project is huge.
    cd mulle-clang
    curl -L -O "https://raw.githubusercontent.com/Codeon-GmbH/mulle-clang/mulle_objclang_39/install-mulle-clang.sh"
    ```
-2. Build the compiler:
+2. Build the compiler. Here is an example, where the compiler is installed into
+   `opt` and the symlink to the compiler is installed in `/usr/local/bin`:
 
    ```
    chmod 755 install-mulle-clang.sh
-   ./install-mulle-clang.sh
+   ./install-mulle-clang.sh --clang-prefix=/opt
+   ./install-mulle-clang.sh install --symlink-prefix=/usr/local
    ```
 
    Now you will have to wait for a long, long time.
-3. Pick one of the following install methods:
-
-   *  Add **mulle-clang** to your PATH. Assuming you are still in `./mulle-clang` (the directory containing the produced folders `./bin` and `./lib`):
-
-      ```
-      PATH="${PWD}/bin:${PATH}" ; export PATH
-      LD_LIBRARY_PATH="${PWD}/lib:${LD_LIBRARY_PATH}" ; export LD_LIBRARY_PATH
-      DYLD_LIBRARY_PATH="${PWD}/lib:${DYLD_LIBRARY_PATH}" ; export DYLD_LIBRARY_PATH
-      ```
