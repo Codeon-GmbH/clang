@@ -771,18 +771,26 @@ main()
          ;;
 
          --prefix)
+            [ $# -eq 1 ] && fail "missing argument to $1"
+            shift
             PREFIX="$1"
          ;;
 
          --clang-prefix)
+            [ $# -eq 1 ] && fail "missing argument to $1"
+            shift
             MULLE_CLANG_INSTALL_PREFIX="$1"
          ;;
 
          --llvm-prefix)
+            [ $# -eq 1 ] && fail "missing argument to $1"
+            shift
             MULLE_LLVM_INSTALL_PREFIX="$1"
          ;;
 
          --symlink-prefix)
+            [ $# -eq 1 ] && fail "missing argument to $1"
+            shift
             SYMLINK_PREFIX="$1"
          ;;
 
