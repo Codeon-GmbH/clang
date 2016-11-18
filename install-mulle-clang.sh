@@ -292,18 +292,22 @@ check_cmake_version()
    local minor
    local version
 
-   version="`cmake -version | awk '{ print $3 }'`"
+   version="`cmake -version 2> /dev/null| awk '{ print $3 }'`"
+   if [ -z "${version}" ]
+   then
+      log_fluff "The cmake is not installed."
+      return 2
+   fi
+
    major="`echo "${version}" | head -1 | cut -d. -f1`"
    if [ -z "${major}" ]
    then
-       fail "Could not figure out where cmake is and what version it is."
+      fail "Could not figure out where cmake is and what version it is."
    fi
 
    minor="`echo "${version}" | head -1 | cut -d. -f2`"
    if [ "${major}" -lt "${CMAKE_VERSION_MAJOR}" ] || [ "${major}" -eq "${CMAKE_VERSION_MAJOR}" -a "${minor}" -lt "${CMAKE_VERSION_MINOR}" ]
    then
-      log_fluff "The cmake version is too old. cmake version ${CMAKE_VERSION} or better is required."
-      log_fluff "Let's build cmake from scratch"
       return 1
    fi
 
@@ -311,16 +315,29 @@ check_cmake_version()
 }
 
 
-
 check_and_build_cmake()
 {
    if [ -z "${BUILD_CMAKE}" ]
    then
-      if check_cmake_version
-      then
-         return
-      fi
+      install_binary_if_missing "cmake" "https://cmake.org/download/"
    fi
+
+   check_cmake_version
+   case $? in
+      0)
+         return
+      ;;
+
+      1)
+         log_fluff "The cmake version is too old. cmake version ${CMAKE_VERSION} or better is required."
+      ;;
+
+      2)
+         :
+      ;;
+   esac
+
+   log_fluff "Let's build cmake from scratch"
    build_cmake || fail "build_cmake failed"
 }
 
@@ -374,7 +391,7 @@ setup_build_environment()
          PATH="$PATH:/c/Program Files/CMake/bin/cmake:/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin"
 
          install_binary_if_missing "nmake" "https://www.visualstudio.com/de-de/downloads/download-visual-studio-vs.aspx and then add the directory containing nmake to your %PATH%"
-         install_binary_if_missing "cmake" "https://cmake.org/download/"
+
          CMAKE_GENERATOR="NMake Makefiles"
          MAKE=nmake.exe
          CXX_COMPILER=cl.exe
@@ -385,7 +402,7 @@ setup_build_environment()
          log_fluff "Detected ${UNAME}"
          install_binary_if_missing "make" "somewhere"
          install_binary_if_missing "python" "https://www.python.org/downloads/release"
-         install_binary_if_missing "cmake" "https://cmake.org/download/"
+
          CMAKE_GENERATOR="Unix Makefiles"
          MAKE=make
          MAKE_FLAGS="${MAKE_FLAGS} -j `get_core_count`"
