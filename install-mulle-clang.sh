@@ -44,27 +44,23 @@ CODEON_GITHUB_REPO=${CODEON_GITHUB_REPO:-${_CODEON_GITHUB_REPO}}
 
 environment_initialize()
 {
-   #
-   #
-   #
    UNAME="`uname`"
    case "${UNAME}" in
       MINGW*)
          CLANG_SUFFIX="-cl"
          EXE_EXTENSION=".exe"
-         MULLE_CLANG_INSTALL_PREFIX="~/mulle-clang/${MULLE_OBJC_VERSION}"
-         MULLE_LLDB_INSTALL_PREFIX="~/mulle-lldb/${MULLE_OBJC_VERSION}"
          SYMLINK_PREFIX="~"
          SUDO=
       ;;
 
       *)
-         MULLE_CLANG_INSTALL_PREFIX="${PREFIX}/opt/mulle-clang/${MULLE_OBJC_VERSION}"
-         MULLE_LLDB_INSTALL_PREFIX="${PREFIX}/opt/mulle-lldb/${MULLE_OBJC_VERSION}"
          SYMLINK_PREFIX="/usr/local"
          SUDO="sudo"
       ;;
    esac
+
+   MULLE_CLANG_INSTALL_PREFIX="${PREFIX}/mulle-clang/${MULLE_OBJC_VERSION}"
+   MULLE_LLDB_INSTALL_PREFIX="${PREFIX}/mulle-lldb/${MULLE_OBJC_VERSION}"
 }
 
 
@@ -1009,7 +1005,6 @@ main()
 {
    OWD="`pwd -P`"
    PREFIX="${OWD}"
-   PATH="${OWD}/bin:$PATH"; export PATH
 
    while [ $# -ne 0 ]
    do
@@ -1037,6 +1032,26 @@ main()
             VERBOSE="YES"
          ;;
 
+         --prefix)
+            PREFIX="$1"
+         ;;
+
+         --clang-prefix)
+            MULLE_CLANG_INSTALL_PREFIX="$1"
+         ;;
+
+         --llvm-prefix)
+            MULLE_LLVM_INSTALL_PREFIX="$1"
+         ;;
+
+         --lldb-prefix)
+            MULLE_LLDB_INSTALL_PREFIX="$1"
+         ;;
+
+         --symlink-prefix)
+            SYMLINK_PREFIX="$1"
+         ;;
+
          -*)
             echo "unknown option $1" >&2
             exit 1
@@ -1050,25 +1065,14 @@ main()
       shift
    done
 
+   PATH="${PREFIX}/bin:$PATH"; export PATH
+
    COMMAND="${1:-default}"
    [ $# -eq 0 ] || shift
 
-   SYMLINK_PREFIX="${1:-${SYMLINK_PREFIX}}"
-   [ $# -eq 0 ] || shift
-
-   MULLE_CLANG_INSTALL_PREFIX="${1:-${MULLE_CLANG_INSTALL_PREFIX}}"
-   [ $# -eq 0 ] || shift
-
-   MULLE_LLVM_INSTALL_PREFIX="${1:-${PREFIX}}"
-   [ $# -eq 0 ] || shift
-
-   MULLE_LLDB_INSTALL_PREFIX="${1:-${MULLE_LLDB_INSTALL_PREFIX}}"
-   [ $# -eq 0 ] || shift
 
    # shouldn't thsis be CC /CXX ?
-   C_COMPILER="${1:-${CC}}"
-   [ $# -eq 0 ] || shift
-
+   C_COMPILER="${CC}"
    if [ -z "${C_COMPILER}" ]
    then
       C_COMPILER="`command -v "clang"`"
@@ -1083,8 +1087,7 @@ main()
       C_COMPILER="`basename "${C_COMPILER}"`"
    fi
 
-   CXX_COMPILER="${1:-${CXX}}"
-   [ $# -eq 0 ] || shift
+   CXX_COMPILER="${CXX}"
    CXX_COMPILER="${CXX_COMPILER:-${C_COMPILER}++}"
 
    if [ "${CXX_COMPILER}" = "gcc++" ]
@@ -1095,16 +1098,13 @@ main()
    #
    # these parameters are rarely needed
    #
-   LLVM_BRANCH="${1:-release_${MULLE_OBJC_VERSION_BRANCH}}"
-   [ $# -eq 0 ] || shift
+   LLVM_BRANCH="release_${MULLE_OBJC_VERSION_BRANCH}"
    LLDB_BRANCH="${LLVM_BRANCH}"
    CLANG_BRANCH="${LLVM_BRANCH}"
 
    # "mulle_objcclang_${MULLE_OBJC_VERSION_BRANCH}"
-   MULLE_CLANG_BRANCH="${1:-mulle_objclang_${MULLE_OBJC_VERSION_BRANCH}}"
-   [ $# -eq 0 ] || shift
-   MULLE_LLDB_BRANCH="${1:-${MULLE_CLANG_BRANCH}}"
-   [ $# -eq 0 ] || shift
+   MULLE_CLANG_BRANCH="mulle_objclang_${MULLE_OBJC_VERSION_BRANCH}"
+   MULLE_LLDB_BRANCH="${MULLE_CLANG_BRANCH}"
 
    #
    # it makes little sense to change these
