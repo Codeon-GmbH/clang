@@ -131,9 +131,9 @@ defined in the runtime.
 You can use [homebrew](//brew.sh) to install the library:
 
 ```
-brew tap codeon-gmbh/software
-brew install mulle-clang
+brew install codeon-gmbh/software/mulle-clang
 ```
+
 > If for some reason homebrew can not use the bottle, the compiler must be
 > built from source. This takes a long time! On my Macbook Air the build
 > took about 30 minutes, even with the prerequisite llvm downloaded as a bottle.
@@ -145,19 +145,20 @@ brew install mulle-clang
 This will install the compiler into `/opt/mulle-clang` and a symlink
 into `/usr/bin`:
 
-#### Ubuntu/Debian 64 bit
+#### Ubuntu 16.04 LTS / Debian xenial 64 bit
 
 ```
-curl -O -L http://download.codeon.de/bottles/mulle-clang-3.9.0-amd64.deb
-sudo dpkg --install mulle-clang-3.9.0-amd64.deb
+curl -O -L http://download.codeon.de/bottles/mulle-clang-3.9.0-xenial-amd64.deb
+sudo dpkg --install mulle-clang-3.9.0-xenial-amd64.deb
 ```
 
-#### RedHat/RPM 64 bit
+#### Ubuntu 14.04 LTS / Debian trusty 64 bit
 
 ```
-curl -O -L http://download.codeon.de/bottles/mulle-clang-3.9.0-amd64.rpm
-sudo rpm –ivh mulle-clang-3.9.0-amd64.rpm
+curl -O -L http://download.codeon.de/bottles/mulle-clang-3.9.0-trusty-amd64.deb
+sudo dpkg --install mulle-clang-3.9.0-trusty-amd64.deb
 ```
+
 
 ### Manually
 
@@ -165,7 +166,7 @@ Otherwise read:
 
 * [How to Build](BUILD_MULLE_CLANG.md)
 
-Afterwards head on over to [mulle-objc](//www.mulle-kybernetik.com/mulle-objc) to get the Objective-C libraries.
+Afterwards head on over to [mulle-objc](/mulle-objc) to get the Objective-C libraries.
 
 
 ## Author
