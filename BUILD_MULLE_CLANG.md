@@ -86,8 +86,8 @@ as this project is huge.
 
    ```
    chmod 755 install-mulle-clang.sh
-   ./install-mulle-clang.sh --clang-prefix=/opt
-   ./install-mulle-clang.sh install --symlink-prefix=/usr/local
+   ./install-mulle-clang.sh --clang-prefix /opt
+   ./install-mulle-clang.sh install --symlink-prefix /usr/local
    ```
 
    Now you will have to wait for a long, long time.
