@@ -166,7 +166,7 @@ Otherwise read:
 
 * [How to Build](BUILD_MULLE_CLANG.md)
 
-Afterwards head on over to [mulle-objc](/mulle-objc) to get the Objective-C libraries.
+Afterwards head on over to [mulle-objc](//github.com/mulle-objc) to get the Objective-C libraries.
 
 
 ## Author
