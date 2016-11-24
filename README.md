@@ -44,7 +44,7 @@ Your ARC code may not run in AAM, but AAM code should run in ARC with no problem
 
 ## Additional File Types
 
-The compiler handles `.aam` files, which enables AMM ("Always Autoreleased Mode").
+The compiler handles `.aam` files, which enables AAM ("Always Autoreleased Mode").
 
 
 ## Additional Options
