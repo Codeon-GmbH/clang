@@ -271,14 +271,6 @@ emit_llvm_loop_utils_patch()
    cat <<EOF
    --- lib/Transforms/Utils/LoopUtils.cpp 2017-09-13 15:16:32.000000000 +0200
 +++ /tmp/LoopUtils.cpp  2017-09-13 15:14:27.000000000 +0200
-@@ -23,7 +23,6 @@
- #include "llvm/Analysis/ScalarEvolutionExpander.h"
- #include "llvm/Analysis/ScalarEvolutionExpressions.h"
- #include "llvm/Analysis/TargetTransformInfo.h"
--#include "llvm/Analysis/ValueTracking.h" // (nat) added this
- #include "llvm/IR/Dominators.h"
- #include "llvm/IR/Instructions.h"
- #include "llvm/IR/Module.h"
 @@ -1118,8 +1117,6 @@
 
  /// Returns true if the instruction in a loop is guaranteed to execute at least
@@ -1236,15 +1228,15 @@ is likely to get reused. If this is not what you want, [CTRL]-[C] now and do:
    then
       if [ "${INSTALL_LLVM}" = "YES" ]
       then
-         build_llvm "${MAKE_INSTALL_COMMAND}"
+         build_llvm "${MAKE_INSTALL_COMMAND}" "$@"
       else
-         build_llvm "${MAKE_BUILD_COMMAND}"
+         build_llvm "${MAKE_BUILD_COMMAND}" "$@"
       fi
    fi
 
    if [ "${BUILD_CLANG}" = "YES" -a "${BY_THE_BOOK}" = "NO" ]
    then
-      build_clang "${MAKE_INSTALL_COMMAND}"
+      build_clang "${MAKE_INSTALL_COMMAND}" "$@"
    fi
 }
 
@@ -1257,15 +1249,15 @@ _build()
    then
       if [ "${INSTALL_LLVM}" = "YES" ]
       then
-         _build_llvm "${MAKE_INSTALL_COMMAND}"
+         _build_llvm "${MAKE_INSTALL_COMMAND}" "$@"
       else
-         _build_llvm "${MAKE_BUILD_COMMAND}"
+         _build_llvm "${MAKE_BUILD_COMMAND}" "$@"
       fi
    fi
 
    if [ "${BUILD_CLANG}" = "YES" -a "${BY_THE_BOOK}" = "NO" ]
    then
-      _build_clang "${MAKE_INSTALL_COMMAND}"
+      _build_clang "${MAKE_INSTALL_COMMAND}" "$@"
    fi
 }
 
@@ -1742,7 +1734,7 @@ main()
       default)
          download
          setup_build_environment
-         build
+         build "$@"
       ;;
 
       download)
@@ -1751,16 +1743,16 @@ main()
 
       build)
          setup_build_environment
-         build
+         build "$@"
       ;;
 
       _build)
          setup_build_environment
-         _build
+         _build "$@"
       ;;
 
       uninstall)
-         uninstall_links
+         uninstall_links "$@"
       ;;
    esac
 }
