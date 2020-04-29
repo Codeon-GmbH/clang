@@ -189,7 +189,7 @@ sudo apt-get update &&
 sudo apt-get install curl
 
 curl -sS https://www.codeon.de/dists/codeon-pub.asc | sudo apt-key add -
-sudo echo "deb [arch=amd64] http://download.codeon.de `lsb_release -c -s` main" > /etc/apt/sources.list.d/codeon.de-main.list
+echo "deb [arch=all] http://www.mulle-kybernetik.com `lsb_release -c -s` main" | sudo tee "/etc/apt/sources.list.d/mulle-kybernetik.com-main.list" > /dev/null
 
 sudo apt-get update &&
 sudo apt-get install mulle-clang
