@@ -28,6 +28,13 @@ If you are configuring a virtual machine, give it some more cores!
 You need the **bash** shell and **curl** (or **wget** )and you may want to get **sudo** happening to
 install packages (or run the script as **root**). bash is usually already present.
 
+On FreeBSD 12 I had to install `libunwind` before compiling and specify the target linker:
+
+```
+sudo mkdir /opt 
+sudo chown `id -u` /opt
+./install-mulle-clang --prefix /opt/mulle-clang-10.0.0.2 --linker ld
+```
 
 <a name="common-generic"></a>
 ### Common generic instructions
