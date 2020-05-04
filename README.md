@@ -197,10 +197,11 @@ sudo apt-get install mulle-clang
 
 #### Debian
 
-You can install on Debian (and Ubuntu) with `dpkg` after downloading the appropriate package:
+You can install on Debian (and Ubuntu) with `dpkg` after downloading the appropriate package. Notice that the
+packages are still named with Ubuntu codes.
 
 ```
-sudo dpkg --install mulle-clang-10.0.0.2-${OS}-amd64.deb
+sudo dpkg --install mulle-clang-10.0.0.2-${Ubuntu}-amd64.deb
 ```
 
 Debian  | Ubuntu  | `shasum -b -a 256`
