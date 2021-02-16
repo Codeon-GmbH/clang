@@ -1,3 +1,5 @@
+# THIS PROJECT HAS BEEN SUPERSEDED BY [mulle-clang-project](https://github.com/Codeon-GmbH/mulle-clang-project) 
+
 [![Codeon Gmbh](CodeonLogo.png)](//www.codeon.de)
 
 # mulle-clang
